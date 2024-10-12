@@ -24,7 +24,9 @@ let wordsTyped = 0;
 let totalKeystrokes = 0;
 let correctKeystrokes = 0;
 let maxAliens = 5;
-const MAX_GAME_TIME = 5 * 60 * 1000;
+const MAX_GAME_TIME = 2 * 60 * 1000;
+
+let words = [];
 
 function updateMaxAliens(elapsedTime) {
   maxAliens = Math.min(15, Math.floor(5 + (elapsedTime / MAX_GAME_TIME) * 10));
@@ -63,19 +65,18 @@ class Alien {
     this.speed = this.baseSpeed;
     this.word = words[Math.floor(Math.random() * words.length)];
     this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-    this.size = 20;
-    this.pulsePhase = 0;
+    this.size = 30;
+    this.pulsePhase = Math.random() * Math.PI * 2;
   }
 
   draw() {
     ctx.save();
     ctx.translate(this.x, this.y);
-    ctx.rotate(Math.PI / 2 - this.angle);
 
     this.pulsePhase += 0.1;
     const pulseFactor = 1 + Math.sin(this.pulsePhase) * 0.1;
 
-    // Draw alien body
+    // Alien body
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.moveTo(0, -this.size * pulseFactor);
@@ -84,20 +85,34 @@ class Alien {
     ctx.closePath();
     ctx.fill();
 
+    // Alien eyes
+    const eyeSize = this.size / 5;
     ctx.fillStyle = "#000";
     ctx.beginPath();
-    ctx.arc(-5, -5, 3, 0, Math.PI * 2);
-    ctx.arc(5, -5, 3, 0, Math.PI * 2);
+    ctx.arc(-this.size / 3, -this.size / 3, eyeSize, 0, Math.PI * 2);
+    ctx.arc(this.size / 3, -this.size / 3, eyeSize, 0, Math.PI * 2);
     ctx.fill();
 
+    // Alien mouth
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, this.size / 2, 0, Math.PI);
+    ctx.stroke();
+
+    // Glow effect
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 20;
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Word
+    ctx.shadowBlur = 0;
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 16px Arial";
-    ctx.rotate(-(Math.PI / 2 - this.angle));
-    ctx.fillText(
-      this.word,
-      -ctx.measureText(this.word).width / 2,
-      this.size + 25
-    );
+    ctx.font = "bold 18px Orbitron";
+    ctx.textAlign = "center";
+    ctx.fillText(this.word, 0, this.size + 25);
 
     ctx.restore();
   }
@@ -127,17 +142,19 @@ class Star {
     this.y = Math.random() * canvas.height;
     this.size = Math.random() * 2;
     this.speed = Math.random() * 0.5 + 0.1;
+    this.brightness = Math.random();
   }
 
   draw() {
-    ctx.fillStyle = "#fff";
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${this.brightness})`;
     ctx.fill();
   }
 
   update() {
     this.y += this.speed;
+    this.brightness = Math.sin((Date.now() / 1000) * this.speed) * 0.5 + 0.5;
     if (this.y > canvas.height) {
       this.y = 0;
       this.x = Math.random() * canvas.width;
@@ -175,8 +192,12 @@ function spawnAlien(currentTime) {
 }
 
 function drawBackground() {
-  ctx.fillStyle = "#000";
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, "#000033");
+  gradient.addColorStop(1, "#000011");
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   stars.forEach((star) => {
     star.draw();
     star.update();
@@ -184,20 +205,34 @@ function drawBackground() {
 }
 
 function drawPlayer() {
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height - 40);
+
   ctx.fillStyle = "#0f0";
   ctx.beginPath();
-  ctx.moveTo(canvas.width / 2, canvas.height - 40);
-  ctx.lineTo(canvas.width / 2 - 25, canvas.height);
-  ctx.lineTo(canvas.width / 2 + 25, canvas.height);
+  ctx.moveTo(0, -30);
+  ctx.lineTo(-25, 30);
+  ctx.lineTo(25, 30);
   ctx.closePath();
   ctx.fill();
 
+  ctx.fillStyle = "#00f";
+  ctx.beginPath();
+  ctx.arc(0, 0, 10, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.shadowColor = "#0f0";
-  ctx.shadowBlur = 10;
-  ctx.strokeStyle = "#fff";
+  ctx.shadowBlur = 20;
+  ctx.strokeStyle = "#0f0";
   ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.shadowBlur = 0;
+
+  ctx.restore();
+}
+
+function updateUI() {
+  ctx.fillStyle = "#fff";
+  ctx.font = "18px Orbitron";
 }
 
 function gameLoop(currentTime) {
@@ -214,6 +249,8 @@ function gameLoop(currentTime) {
       aliens.splice(i, 1);
     }
   }
+
+  updateUI();
 
   if (lives > 0) {
     requestAnimationFrame(gameLoop);
@@ -247,6 +284,7 @@ function checkInput() {
   }
 
   inputDisplay.textContent = currentInput;
+  inputDisplay.textContent = currentInput;
 }
 
 function endGame() {
@@ -266,6 +304,7 @@ function endGame() {
 }
 
 async function startGame() {
+  await fetchWords();
   gameStarted = true;
   gameTime = performance.now();
   startButton.style.display = "none";
@@ -283,6 +322,7 @@ function restartGame() {
   wordsTyped = 0;
   totalKeystrokes = 0;
   correctKeystrokes = 0;
+  maxAliens = 5;
   livesElement.textContent = lives;
   scoreElement.textContent = score;
   inputDisplay.textContent = "";

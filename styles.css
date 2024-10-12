@@ -5,14 +5,15 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #000;
-  font-family: Arial, sans-serif;
+  background-color: #000011;
+  font-family: "Orbitron", sans-serif;
   color: #fff;
+  overflow: hidden;
 }
 
 #gameCanvas {
-  border: 2px solid #fff;
-  box-shadow: 0 0 20px #0ff;
+  border: 2px solid #0ff;
+  box-shadow: 0 0 20px #0ff, 0 0 40px #00f;
   transition: filter 0.3s ease;
 }
 
@@ -24,6 +25,7 @@ body {
   background-color: rgba(0, 0, 0, 0.7);
   padding: 10px;
   border-radius: 5px;
+  z-index: 5;
 }
 
 #inputDisplay {
@@ -35,34 +37,44 @@ body {
   background-color: rgba(0, 0, 0, 0.7);
   padding: 5px 10px;
   border-radius: 5px;
+  z-index: 5;
 }
 
 .button {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  font-size: 18px;
-  background-color: #4caf50;
+  font-family: "Orbitron", sans-serif;
+  padding: 15px 30px;
+  font-size: 20px;
+  background-color: #0066cc;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 0 10px #00f;
 }
 
 .button:hover {
-  background-color: #45a049;
+  background-color: #0099ff;
+  box-shadow: 0 0 20px #0ff;
 }
 
 #startButton {
+  position: absolute;
   top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
 }
 
 #restartButton {
+  position: absolute;
   bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   display: none;
-  z-index: 11;
+  z-index: 15;
 }
 
 #gameOverScreen {
@@ -79,17 +91,15 @@ body {
   z-index: 10;
 }
 
-#gameCanvas {
-  transition: filter 0.3s ease;
-}
-
 #gameOverScreen h2 {
   color: #ff0;
   margin-bottom: 20px;
-  font-size: 36px;
+  font-size: 48px;
+  text-shadow: 0 0 10px #ff0;
 }
 
 #gameOverScreen p {
   margin: 10px 0;
-  font-size: 18px;
+  font-size: 24px;
+  color: #0ff;
 }
