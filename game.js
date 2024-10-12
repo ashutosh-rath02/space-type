@@ -65,56 +65,166 @@ class Alien {
     this.speed = this.baseSpeed;
     this.word = words[Math.floor(Math.random() * words.length)];
     this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-    this.size = 30;
-    this.pulsePhase = Math.random() * Math.PI * 2;
+    this.size = 40; // Slightly larger for more detail
+    this.animationOffset = Math.random() * Math.PI * 2;
   }
 
   draw() {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    this.pulsePhase += 0.1;
-    const pulseFactor = 1 + Math.sin(this.pulsePhase) * 0.1;
+    // Body
+    const bodyGradient = ctx.createLinearGradient(
+      -this.size / 2,
+      -this.size / 2,
+      this.size / 2,
+      this.size / 2
+    );
+    bodyGradient.addColorStop(0, this.color);
+    bodyGradient.addColorStop(1, this.darkenColor(this.color, 30));
+    ctx.fillStyle = bodyGradient;
 
-    // Alien body
-    ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.moveTo(0, -this.size * pulseFactor);
-    ctx.lineTo(-this.size * pulseFactor, this.size * pulseFactor);
-    ctx.lineTo(this.size * pulseFactor, this.size * pulseFactor);
+    ctx.moveTo(-this.size / 2, -this.size / 2);
+    ctx.lineTo(this.size / 2, -this.size / 2);
+    ctx.lineTo(this.size / 2, this.size / 2);
+    ctx.lineTo(-this.size / 2, this.size / 2);
     ctx.closePath();
     ctx.fill();
 
-    // Alien eyes
-    const eyeSize = this.size / 5;
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.arc(-this.size / 3, -this.size / 3, eyeSize, 0, Math.PI * 2);
-    ctx.arc(this.size / 3, -this.size / 3, eyeSize, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Alien mouth
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, this.size / 2, 0, Math.PI);
-    ctx.stroke();
-
-    // Glow effect
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 20;
-    ctx.strokeStyle = this.color;
+    // 3D effect for body edges
+    ctx.strokeStyle = this.darkenColor(this.color, 50);
     ctx.lineWidth = 2;
     ctx.stroke();
+
+    // Eyes
+    const eyeGradient = ctx.createRadialGradient(
+      -this.size / 4,
+      -this.size / 4,
+      0,
+      -this.size / 4,
+      -this.size / 4,
+      this.size / 6
+    );
+    eyeGradient.addColorStop(0, "white");
+    eyeGradient.addColorStop(1, "rgba(0, 0, 0, 0.7)");
+
+    ctx.fillStyle = eyeGradient;
+    this.drawEye(-this.size / 4, -this.size / 5, this.size / 6);
+    this.drawEye(this.size / 4, -this.size / 5, this.size / 6);
+
+    // Antenna
+    const antennaY = Math.sin(Date.now() / 200 + this.animationOffset) * 2;
+    ctx.fillStyle = this.lightenColor(this.color, 20);
+    this.drawAntenna(
+      -this.size / 4,
+      -this.size / 2 + antennaY,
+      this.size / 8,
+      this.size / 4
+    );
+    this.drawAntenna(
+      this.size / 4,
+      -this.size / 2 + antennaY,
+      this.size / 8,
+      this.size / 4
+    );
+
+    // Arms
+    ctx.fillStyle = this.darkenColor(this.color, 20);
+    this.drawArm(-this.size / 2, 0, this.size / 4, this.size / 2);
+    this.drawArm(
+      this.size / 2 - this.size / 4,
+      0,
+      this.size / 4,
+      this.size / 2
+    );
 
     // Word
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 18px Orbitron";
+    ctx.fillStyle = "white";
+    ctx.font = "bold 14px Orbitron";
     ctx.textAlign = "center";
-    ctx.fillText(this.word, 0, this.size + 25);
+    ctx.fillText(this.word, 0, this.size + 15);
 
     ctx.restore();
+  }
+
+  drawEye(x, y, size) {
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupil
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye highlight
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(x - size / 4, y - size / 4, size / 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawAntenna(x, y, width, height) {
+    const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+    gradient.addColorStop(0, this.lightenColor(this.color, 30));
+    gradient.addColorStop(1, this.darkenColor(this.color, 10));
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width / 2, y + height);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = this.darkenColor(this.color, 30);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  drawArm(x, y, width, height) {
+    const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+    gradient.addColorStop(0, this.lightenColor(this.color, 10));
+    gradient.addColorStop(1, this.darkenColor(this.color, 30));
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x, y + height);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = this.darkenColor(this.color, 50);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  lightenColor(color, percent) {
+    return this.shadeColor(color, percent);
+  }
+
+  darkenColor(color, percent) {
+    return this.shadeColor(color, -percent);
+  }
+
+  shadeColor(color, percent) {
+    const num = parseInt(color.slice(1), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = ((num >> 8) & 0x00ff) + amt;
+    const B = (num & 0x0000ff) + amt;
+    return `#${(
+      (1 << 24) |
+      ((R < 255 ? (R < 1 ? 0 : R) : 255) << 16) |
+      ((G < 255 ? (G < 1 ? 0 : G) : 255) << 8) |
+      (B < 255 ? (B < 1 ? 0 : B) : 255)
+    )
+      .toString(16)
+      .slice(1)}`;
   }
 
   update(elapsedTime) {
@@ -206,9 +316,14 @@ function drawBackground() {
 
 function drawPlayer() {
   ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height - 40);
+  ctx.translate(canvas.width / 2, canvas.height - 60);
 
-  ctx.fillStyle = "#0f0";
+  // Player ship body
+  const shipGradient = ctx.createLinearGradient(0, -30, 0, 30);
+  shipGradient.addColorStop(0, "#4CAF50");
+  shipGradient.addColorStop(1, "#1B5E20");
+
+  ctx.fillStyle = shipGradient;
   ctx.beginPath();
   ctx.moveTo(0, -30);
   ctx.lineTo(-25, 30);
@@ -216,16 +331,36 @@ function drawPlayer() {
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = "#00f";
+  // Cockpit
+  const cockpitGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 15);
+  cockpitGradient.addColorStop(0, "#81D4FA");
+  cockpitGradient.addColorStop(1, "#01579B");
+
+  ctx.fillStyle = cockpitGradient;
   ctx.beginPath();
-  ctx.arc(0, 0, 10, 0, Math.PI * 2);
+  ctx.arc(0, 0, 15, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.shadowColor = "#0f0";
+  // Glow effect
+  ctx.shadowColor = "#4CAF50";
   ctx.shadowBlur = 20;
-  ctx.strokeStyle = "#0f0";
+  ctx.strokeStyle = "#81C784";
   ctx.lineWidth = 2;
   ctx.stroke();
+
+  // Engines
+  ctx.fillStyle = "#FF9800";
+  ctx.beginPath();
+  ctx.moveTo(-15, 30);
+  ctx.lineTo(-10, 40);
+  ctx.lineTo(-5, 30);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(5, 30);
+  ctx.lineTo(10, 40);
+  ctx.lineTo(15, 30);
+  ctx.fill();
 
   ctx.restore();
 }
