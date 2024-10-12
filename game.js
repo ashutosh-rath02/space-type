@@ -23,19 +23,35 @@ let gameStarted = false;
 let wordsTyped = 0;
 let totalKeystrokes = 0;
 let correctKeystrokes = 0;
+let maxAliens = 5;
+const MAX_GAME_TIME = 5 * 60 * 1000;
 
-const words = [
-  "alien",
-  "invader",
-  "space",
-  "galaxy",
-  "cosmic",
-  "nebula",
-  "star",
-  "meteor",
-  "planet",
-  "ufo",
-];
+function updateMaxAliens(elapsedTime) {
+  maxAliens = Math.min(15, Math.floor(5 + (elapsedTime / MAX_GAME_TIME) * 10));
+}
+
+async function fetchWords(count = 100) {
+  try {
+    const response = await fetch(
+      `https://random-word-api.vercel.app/api?words=${count}`
+    );
+    words = await response.json();
+  } catch (error) {
+    console.error("Error fetching words:", error);
+    words = [
+      "alien",
+      "invader",
+      "space",
+      "galaxy",
+      "cosmic",
+      "nebula",
+      "star",
+      "meteor",
+      "planet",
+      "ufo",
+    ];
+  }
+}
 
 class Alien {
   constructor() {
@@ -59,6 +75,7 @@ class Alien {
     this.pulsePhase += 0.1;
     const pulseFactor = 1 + Math.sin(this.pulsePhase) * 0.1;
 
+    // Draw alien body
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.moveTo(0, -this.size * pulseFactor);
@@ -67,16 +84,11 @@ class Alien {
     ctx.closePath();
     ctx.fill();
 
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 10;
-
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#000";
     ctx.beginPath();
     ctx.arc(-5, -5, 3, 0, Math.PI * 2);
     ctx.arc(5, -5, 3, 0, Math.PI * 2);
     ctx.fill();
-
-    ctx.shadowBlur = 0;
 
     ctx.fillStyle = "#fff";
     ctx.font = "bold 16px Arial";
@@ -141,10 +153,24 @@ function initStars() {
 
 function spawnAlien(currentTime) {
   const elapsedTime = currentTime - gameTime;
-  const spawnInterval = Math.max(2000 - elapsedTime / 100, 1000);
-  if (currentTime - lastSpawnTime > spawnInterval) {
-    aliens.push(new Alien());
-    lastSpawnTime = currentTime;
+  updateMaxAliens(elapsedTime);
+  const spawnInterval = Math.max(2000 - elapsedTime / 100, 500);
+  if (
+    currentTime - lastSpawnTime > spawnInterval &&
+    aliens.length < maxAliens
+  ) {
+    const newAlien = new Alien();
+
+    const overlap = aliens.some((alien) => {
+      const dx = newAlien.x - alien.x;
+      const dy = newAlien.y - alien.y;
+      return Math.sqrt(dx * dx + dy * dy) < 100;
+    });
+
+    if (!overlap) {
+      aliens.push(newAlien);
+      lastSpawnTime = currentTime;
+    }
   }
 }
 
@@ -182,10 +208,12 @@ function gameLoop(currentTime) {
   drawPlayer();
   spawnAlien(currentTime);
 
-  aliens = aliens.filter((alien) => {
-    alien.draw();
-    return !alien.update(elapsedTime);
-  });
+  for (let i = aliens.length - 1; i >= 0; i--) {
+    aliens[i].draw();
+    if (aliens[i].update(elapsedTime)) {
+      aliens.splice(i, 1);
+    }
+  }
 
   if (lives > 0) {
     requestAnimationFrame(gameLoop);
@@ -223,7 +251,7 @@ function checkInput() {
 
 function endGame() {
   gameOver = true;
-  const gameDuration = (performance.now() - gameTime) / 60000; // in minutes
+  const gameDuration = (performance.now() - gameTime) / 60000;
   const wpm = Math.round(wordsTyped / gameDuration);
   const accuracy = Math.round((correctKeystrokes / totalKeystrokes) * 100) || 0;
 
@@ -232,11 +260,12 @@ function endGame() {
   typingSpeedElement.textContent = wpm;
   accuracyElement.textContent = accuracy;
 
-  gameOverScreen.style.display = "block";
+  canvas.style.filter = "blur(5px)";
+  gameOverScreen.style.display = "flex";
   restartButton.style.display = "block";
 }
 
-function startGame() {
+async function startGame() {
   gameStarted = true;
   gameTime = performance.now();
   startButton.style.display = "none";
@@ -259,8 +288,11 @@ function restartGame() {
   inputDisplay.textContent = "";
   restartButton.style.display = "none";
   gameOverScreen.style.display = "none";
+  canvas.style.filter = "none";
   gameStarted = true;
-  requestAnimationFrame(gameLoop);
+  fetchWords().then(() => {
+    requestAnimationFrame(gameLoop);
+  });
 }
 
 document.addEventListener("keydown", (e) => {
@@ -277,6 +309,8 @@ document.addEventListener("keydown", (e) => {
 startButton.addEventListener("click", startGame);
 restartButton.addEventListener("click", restartGame);
 
-initStars();
-drawBackground();
-drawPlayer();
+fetchWords().then(() => {
+  initStars();
+  drawBackground();
+  drawPlayer();
+});

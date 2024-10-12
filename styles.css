@@ -13,6 +13,7 @@ body {
 #gameCanvas {
   border: 2px solid #fff;
   box-shadow: 0 0 20px #0ff;
+  transition: filter 0.3s ease;
 }
 
 #gameStats {
@@ -61,23 +62,31 @@ body {
 #restartButton {
   bottom: 50px;
   display: none;
+  z-index: 11;
 }
 
 #gameOverScreen {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
   display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+#gameCanvas {
+  transition: filter 0.3s ease;
 }
 
 #gameOverScreen h2 {
   color: #ff0;
   margin-bottom: 20px;
+  font-size: 36px;
 }
 
 #gameOverScreen p {
