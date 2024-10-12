@@ -422,6 +422,73 @@ function checkInput() {
   inputDisplay.textContent = currentInput;
 }
 
+function generateStatsImage() {
+  const statsCanvas = document.createElement("canvas");
+  statsCanvas.width = 600;
+  statsCanvas.height = 400;
+  const statsCtx = statsCanvas.getContext("2d");
+
+  // Background
+  statsCtx.fillStyle = "#000033";
+  statsCtx.fillRect(0, 0, statsCanvas.width, statsCanvas.height);
+
+  // Title
+  statsCtx.fillStyle = "#ffffff";
+  statsCtx.font = "bold 40px Orbitron";
+  statsCtx.textAlign = "center";
+  statsCtx.fillText("Alien Typing Game Stats", statsCanvas.width / 2, 60);
+
+  // Stats
+  statsCtx.font = "30px Orbitron";
+  statsCtx.fillText(`Final Score: ${score}`, statsCanvas.width / 2, 140);
+  statsCtx.fillText(`Words Typed: ${wordsTyped}`, statsCanvas.width / 2, 200);
+  statsCtx.fillText(
+    `Typing Speed: ${Math.round(
+      wordsTyped / ((performance.now() - gameTime) / 60000)
+    )} WPM`,
+    statsCanvas.width / 2,
+    260
+  );
+  statsCtx.fillText(
+    `Accuracy: ${Math.round((correctKeystrokes / totalKeystrokes) * 100)}%`,
+    statsCanvas.width / 2,
+    320
+  );
+
+  return statsCanvas.toDataURL();
+}
+
+function shareOnTwitter() {
+  const statsImage = generateStatsImage();
+  const tweetText = encodeURIComponent(
+    "Check out my score in the Alien Typing Game!"
+  );
+  const gameUrl = encodeURIComponent("https://spacetype.ashutoshrath.me/");
+
+  // Open a new window to upload the image to an image hosting service
+  // For this example, we'll assume you have a server endpoint that handles image uploads
+  const uploadWindow = window.open("", "_blank");
+  uploadWindow.document.write("Uploading image...");
+
+  fetch("/upload-image", {
+    // Replace with your actual image upload endpoint
+    method: "POST",
+    body: JSON.stringify({ image: statsImage }),
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      const imageUrl = encodeURIComponent(data.imageUrl);
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${gameUrl}&media=${imageUrl}`;
+      uploadWindow.location.href = twitterUrl;
+    })
+    .catch((error) => {
+      console.error("Error uploading image:", error);
+      uploadWindow.close();
+      alert("Failed to share. Please try again.");
+    });
+}
+
 function endGame() {
   gameOver = true;
   const gameDuration = (performance.now() - gameTime) / 60000;
@@ -436,6 +503,14 @@ function endGame() {
   canvas.style.filter = "blur(5px)";
   gameOverScreen.style.display = "flex";
   restartButton.style.display = "block";
+
+  // Add share button
+  const shareButton = document.createElement("button");
+  shareButton.textContent = "Share on Twitter";
+  shareButton.classList.add("button");
+  shareButton.style.marginTop = "10px";
+  shareButton.addEventListener("click", shareOnTwitter);
+  gameOverScreen.appendChild(shareButton);
 }
 
 async function startGame() {
