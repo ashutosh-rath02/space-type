@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Alien Typing Game</title>
+    <title>Cosmic Type</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
       rel="stylesheet"
@@ -19,21 +19,41 @@
       name="twitter:image"
       content="https://res.cloudinary.com/dhnkuonev/image/upload/v1728747188/Screenshot_2024-10-12_205424_fa6ar4.png"
     />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>"
+    />
   </head>
   <body>
-    <canvas
-      id="gameCanvas"
-      width="1000"
-      height="700"
-      style="border-radius: 10px"
-    ></canvas>
-    <div id="gameStats">
-      Lives: <span id="lives">3</span> | Score: <span id="score">0</span>
+    <audio id="backgroundMusic" loop volume="0.3">
+      <source src="./audio.mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+    <button id="muteButton" class="mute-button">🔊</button>
+    <div id="introScreen">
+      <h1 class="game-title">Cosmic Type</h1>
+      <p class="intro-text">
+        Defend Earth from alien invaders with your typing skills!
+      </p>
+      <p class="intro-subtext">Type the words to destroy alien ships!</p>
+      <div class="alien-intro"></div>
+      <button id="startButton" class="button">Start Game</button>
+      <div id="backgroundElements"></div>
     </div>
-    <div id="inputDisplay"></div>
-    <button id="startButton" class="button">Start Game</button>
-    <button id="restartButton" class="button">Restart</button>
-    <div id="gameOverScreen">
+    <div id="gameContainer">
+      <canvas
+        id="gameCanvas"
+        width="1000"
+        height="700"
+        style="border-radius: 10px"
+      ></canvas>
+      <div id="gameStats">
+        Lives: <span id="lives">3</span> | Score: <span id="score">0</span>
+      </div>
+      <div id="inputDisplay"></div>
+      <button id="restartButton" class="button">Restart</button>
+    </div>
+    <div id="gameOverScreen" style="display: none">
       <h2>Game Over!</h2>
       <p>Final Score: <span id="finalScore"></span></p>
       <p>Words Typed: <span id="wordsTyped"></span></p>

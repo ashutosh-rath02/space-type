@@ -11,6 +11,12 @@ body {
   overflow: hidden;
 }
 
+#gameContainer {
+  position: relative;
+  width: 1000px;
+  height: 700px;
+}
+
 #gameCanvas {
   border: 2px solid #0ff;
   box-shadow: 0 0 20px #0ff, 0 0 40px #00f;
@@ -42,8 +48,8 @@ body {
 
 .button {
   font-family: "Orbitron", sans-serif;
-  padding: 15px 30px;
-  font-size: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
   background-color: #0066cc;
   color: white;
   border: none;
@@ -58,14 +64,6 @@ body {
 .button:hover {
   background-color: #0099ff;
   box-shadow: 0 0 20px #0ff;
-}
-
-#startButton {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5;
 }
 
 #restartButton {
@@ -88,7 +86,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 10;
+  z-index: 1000;
 }
 
 #gameOverScreen h2 {
@@ -102,4 +100,127 @@ body {
   margin: 10px 0;
   font-size: 24px;
   color: #0ff;
+}
+
+/* Intro screen */
+#introScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000011;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.game-title {
+  font-size: 72px;
+  color: #0ff;
+  text-shadow: 0 0 20px #0ff;
+  opacity: 0;
+  animation: fadeInDown 1s ease-out forwards;
+}
+
+.intro-text {
+  font-size: 24px;
+  color: #fff;
+  margin-top: 20px;
+  opacity: 0;
+  animation: fadeIn 1s ease-out 1s forwards;
+}
+
+.intro-subtext {
+  font-size: 18px;
+  color: #0ff;
+  margin-top: 10px;
+  opacity: 0;
+  animation: fadeIn 1s ease-out 1.5s forwards;
+}
+
+.alien-intro {
+  width: 100px;
+  height: 100px;
+  background-color: #0ff;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  margin-top: 40px;
+  opacity: 0;
+  animation: alienIntro 2s ease-out 2s infinite alternate;
+}
+
+#startButton {
+  opacity: 0;
+  animation: fadeIn 1s ease-out 3s forwards;
+}
+
+#backgroundElements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.bg-element {
+  position: absolute;
+  opacity: 0.2;
+  animation: float 20s infinite alternate;
+}
+
+@keyframes fadeInDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes alienIntro {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-20px) rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(20px, 20px);
+  }
+}
+
+#startButton {
+  opacity: 0;
+  animation: fadeIn 1s ease-out 3s forwards;
+}
+#startButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px #0ff;
+}
+
+.mute-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1000;
+  color: #fff;
+  text-shadow: 0 0 10px #0ff;
 }

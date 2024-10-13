@@ -65,7 +65,7 @@ class Alien {
     this.speed = this.baseSpeed;
     this.word = words[Math.floor(Math.random() * words.length)];
     this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-    this.size = 40; // Slightly larger for more detail
+    this.size = 40;
     this.animationOffset = Math.random() * Math.PI * 2;
   }
 
@@ -390,9 +390,25 @@ function gameLoop(currentTime) {
   if (lives > 0) {
     requestAnimationFrame(gameLoop);
   } else {
+    console.log("Lives reached zero");
     endGame();
   }
 }
+
+const backgroundMusic = document.getElementById("backgroundMusic");
+backgroundMusic.volume = 0.2;
+const muteButton = document.getElementById("muteButton");
+let isMuted = false;
+
+function toggleMute() {
+  isMuted = !isMuted;
+  backgroundMusic.muted = isMuted;
+  muteButton.textContent = isMuted ? "🔇" : "🔊";
+}
+
+muteButton.addEventListener("click", toggleMute);
+
+backgroundMusic.play();
 
 function checkInput() {
   let matchFound = false;
@@ -438,10 +454,16 @@ function shareOnTwitter() {
   window.open(twitterUrl, "_blank");
 }
 
+function calculateWPM(totalCharacters, errorCharacters, timeInMinutes) {
+  const grossWPM = totalCharacters / 5 / timeInMinutes;
+  const netWPM = (totalCharacters / 5 - errorCharacters) / timeInMinutes;
+  return Math.max(0, Math.round(netWPM));
+}
+
 function endGame() {
   gameOver = true;
-  const gameDuration = (performance.now() - gameTime) / 60000;
-  const wpm = Math.round(wordsTyped / gameDuration);
+  const timeInMinutes = (performance.now() - gameTime) / 60000;
+  const wpm = Math.round(wordsTyped / timeInMinutes);
   const accuracy = Math.round((correctKeystrokes / totalKeystrokes) * 100) || 0;
 
   finalScoreElement.textContent = score;
@@ -460,13 +482,35 @@ function endGame() {
   shareButton.style.marginTop = "10px";
   shareButton.addEventListener("click", shareOnTwitter);
   gameOverScreen.appendChild(shareButton);
+
+  // Log to console for debugging
+  console.log("Game Over triggered");
+}
+
+let introComplete = false;
+
+function startIntro() {
+  const introScreen = document.getElementById("introScreen");
+  const startButton = document.getElementById("startButton");
+
+  introScreen.style.display = "flex";
+  startButton.style.display = "block";
+  introComplete = true;
 }
 
 async function startGame() {
+  if (!introComplete) return;
+
+  const introScreen = document.getElementById("introScreen");
+  const startButton = document.getElementById("startButton");
+
+  introScreen.style.display = "none";
+  startButton.style.opacity = "0";
+  startButton.style.pointerEvents = "none";
+
   await fetchWords();
   gameStarted = true;
   gameTime = performance.now();
-  startButton.style.display = "none";
   requestAnimationFrame(gameLoop);
 }
 
@@ -505,8 +549,26 @@ document.addEventListener("keydown", (e) => {
   checkInput();
 });
 
+function createBackgroundElements() {
+  const container = document.getElementById("backgroundElements");
+  const elements = ["🚀", "👽", "🌎", "🌟", "🛸"];
+
+  for (let i = 0; i < 50; i++) {
+    const element = document.createElement("div");
+    element.className = "bg-element";
+    element.textContent = elements[Math.floor(Math.random() * elements.length)];
+    element.style.left = `${Math.random() * 100}%`;
+    element.style.top = `${Math.random() * 100}%`;
+    element.style.fontSize = `${Math.random() * 20 + 10}px`;
+    element.style.animationDuration = `${Math.random() * 10 + 10}s`;
+    container.appendChild(element);
+  }
+}
+
 startButton.addEventListener("click", startGame);
 restartButton.addEventListener("click", restartGame);
+window.addEventListener("load", createBackgroundElements);
+window.addEventListener("load", startIntro);
 
 fetchWords().then(() => {
   initStars();
