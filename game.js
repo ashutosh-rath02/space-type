@@ -10,6 +10,9 @@ const finalScoreElement = document.getElementById("finalScore");
 const wordsTypedElement = document.getElementById("wordsTyped");
 const typingSpeedElement = document.getElementById("typingSpeed");
 const accuracyElement = document.getElementById("accuracy");
+const backgroundMusic = document.getElementById("backgroundMusic");
+const muteButton = document.getElementById("muteButton");
+const playMusicButton = document.getElementById("playMusicButton");
 
 let aliens = [];
 let stars = [];
@@ -73,7 +76,7 @@ class Alien {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    // Body
+    // Body of alien
     const bodyGradient = ctx.createLinearGradient(
       -this.size / 2,
       -this.size / 2,
@@ -92,12 +95,11 @@ class Alien {
     ctx.closePath();
     ctx.fill();
 
-    // 3D effect for body edges
     ctx.strokeStyle = this.darkenColor(this.color, 50);
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Eyes
+    // Her eyes
     const eyeGradient = ctx.createRadialGradient(
       -this.size / 4,
       -this.size / 4,
@@ -113,7 +115,7 @@ class Alien {
     this.drawEye(-this.size / 4, -this.size / 5, this.size / 6);
     this.drawEye(this.size / 4, -this.size / 5, this.size / 6);
 
-    // Antenna
+    // Her Antenna
     const antennaY = Math.sin(Date.now() / 200 + this.animationOffset) * 2;
     ctx.fillStyle = this.lightenColor(this.color, 20);
     this.drawAntenna(
@@ -129,7 +131,7 @@ class Alien {
       this.size / 4
     );
 
-    // Arms
+    // Her Arms
     ctx.fillStyle = this.darkenColor(this.color, 20);
     this.drawArm(-this.size / 2, 0, this.size / 4, this.size / 2);
     this.drawArm(
@@ -139,7 +141,7 @@ class Alien {
       this.size / 2
     );
 
-    // Word
+    // The Word
     ctx.fillStyle = "white";
     ctx.font = "bold 14px Orbitron";
     ctx.textAlign = "center";
@@ -153,13 +155,13 @@ class Alien {
     ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
 
-    // Pupil
+    // Her Pupil
     ctx.fillStyle = "black";
     ctx.beginPath();
     ctx.arc(x, y, size / 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Eye highlight
+    // Her Eye highlight
     ctx.fillStyle = "white";
     ctx.beginPath();
     ctx.arc(x - size / 4, y - size / 4, size / 4, 0, Math.PI * 2);
@@ -318,7 +320,7 @@ function drawPlayer() {
   ctx.save();
   ctx.translate(canvas.width / 2, canvas.height - 60);
 
-  // Player ship body
+  // The Player ship body
   const shipGradient = ctx.createLinearGradient(0, -30, 0, 30);
   shipGradient.addColorStop(0, "#4CAF50");
   shipGradient.addColorStop(1, "#1B5E20");
@@ -331,7 +333,7 @@ function drawPlayer() {
   ctx.closePath();
   ctx.fill();
 
-  // Cockpit
+  // Cock-pit
   const cockpitGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 15);
   cockpitGradient.addColorStop(0, "#81D4FA");
   cockpitGradient.addColorStop(1, "#01579B");
@@ -341,14 +343,12 @@ function drawPlayer() {
   ctx.arc(0, 0, 15, 0, Math.PI * 2);
   ctx.fill();
 
-  // Glow effect
   ctx.shadowColor = "#4CAF50";
   ctx.shadowBlur = 20;
   ctx.strokeStyle = "#81C784";
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Engines
   ctx.fillStyle = "#FF9800";
   ctx.beginPath();
   ctx.moveTo(-15, 30);
@@ -395,9 +395,7 @@ function gameLoop(currentTime) {
   }
 }
 
-const backgroundMusic = document.getElementById("backgroundMusic");
 backgroundMusic.volume = 0.2;
-const muteButton = document.getElementById("muteButton");
 let isMuted = false;
 
 function toggleMute() {
@@ -408,7 +406,19 @@ function toggleMute() {
 
 muteButton.addEventListener("click", toggleMute);
 
-backgroundMusic.play();
+function playMusic() {
+  backgroundMusic
+    .play()
+    .then(() => {
+      console.log("Music started playing");
+      playMusicButton.style.display = "none";
+      muteButton.style.display = "block";
+    })
+    .catch((error) => {
+      console.error("Error playing music:", error);
+    });
+}
+playMusicButton.addEventListener("click", playMusic);
 
 function checkInput() {
   let matchFound = false;
@@ -475,16 +485,12 @@ function endGame() {
   gameOverScreen.style.display = "flex";
   restartButton.style.display = "block";
 
-  // Add share button
   const shareButton = document.createElement("button");
   shareButton.textContent = "Share on Twitter";
   shareButton.classList.add("button");
   shareButton.style.marginTop = "10px";
   shareButton.addEventListener("click", shareOnTwitter);
   gameOverScreen.appendChild(shareButton);
-
-  // Log to console for debugging
-  console.log("Game Over triggered");
 }
 
 let introComplete = false;
