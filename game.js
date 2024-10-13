@@ -491,6 +491,15 @@ function endGame() {
   shareButton.style.marginTop = "10px";
   shareButton.addEventListener("click", shareOnTwitter);
   gameOverScreen.appendChild(shareButton);
+  window.va("event", {
+    name: "game_ended",
+    data: {
+      score: score,
+      wordsTyped: wordsTyped,
+      wpm: wpm,
+      accuracy: accuracy,
+    },
+  });
 }
 
 let introComplete = false;
@@ -518,6 +527,7 @@ async function startGame() {
   gameStarted = true;
   gameTime = performance.now();
   requestAnimationFrame(gameLoop);
+  window.va("event", { name: "game_started" });
 }
 
 function restartGame() {
