@@ -72,7 +72,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   display: none;
-  z-index: 15;
+  z-index: 10000;
 }
 
 #gameOverScreen {

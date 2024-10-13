@@ -64,7 +64,7 @@ class Alien {
     this.radius = Math.random() * (canvas.width / 2 - 50) + 50;
     this.x = canvas.width / 2 + Math.cos(this.angle) * this.radius;
     this.y = Math.sin(this.angle) * this.radius;
-    this.baseSpeed = 0.2;
+    this.baseSpeed = 0.1;
     this.speed = this.baseSpeed;
     this.word = words[Math.floor(Math.random() * words.length)];
     this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
@@ -556,13 +556,35 @@ function restartGame() {
 
 document.addEventListener("keydown", (e) => {
   if (gameOver || !gameStarted) return;
-  if (e.key === "Backspace") {
+
+  if (e.key === "Backspace" && e.ctrlKey) {
+    e.preventDefault();
+    currentInput = "";
+  } else if (e.key === "ArrowLeft" && e.ctrlKey) {
+    e.preventDefault();
+    currentInput = "";
+  } else if (e.key === "ArrowRight" && e.ctrlKey) {
+    e.preventDefault();
+    const matchingAlien = aliens.find((alien) => alien.word === currentInput);
+    if (matchingAlien) {
+      score += currentInput.length * 10;
+      scoreElement.textContent = score;
+      wordsTyped++;
+      correctKeystrokes += currentInput.length;
+      aliens = aliens.filter((alien) => alien !== matchingAlien);
+      currentInput = "";
+    }
+  } else if (e.key === "Backspace") {
     currentInput = currentInput.slice(0, -1);
   } else if (e.key.length === 1) {
     currentInput += e.key.toLowerCase();
     totalKeystrokes++;
+  } else if (e.key === "Escape") {
+    currentInput = "";
   }
+
   checkInput();
+  inputDisplay.textContent = currentInput;
 });
 
 function createBackgroundElements() {
